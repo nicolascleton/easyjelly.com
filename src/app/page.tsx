@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 
+const SUPABASE_URL = "https://erqfznevmgioeumedmac.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVycWZ6bmV2bWdpb2V1bWVkbWFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzMzA4NTMsImV4cCI6MjA2OTkwNjg1M30.C24kGMlAkZYGEbSa-DreWeU6ijcVzc4xnavOIcwjOSw";
+
 const services = [
   {
     name: "Jellyfin",
@@ -61,6 +64,10 @@ const steps = [
 
 export default function Home() {
   const [platform, setPlatform] = useState<"mac" | "windows" | null>(null);
+  const [email, setEmail] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -71,6 +78,36 @@ export default function Home() {
     }
   }, []);
 
+  const verifyEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsVerifying(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/allowed_emails?email=eq.${encodeURIComponent(email.toLowerCase().trim())}&select=email`,
+        {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        setIsAuthorized(true);
+      } else {
+        setError("Cet email n'est pas autorisé. Contactez l'administrateur pour obtenir l'accès.");
+      }
+    } catch {
+      setError("Erreur de vérification. Réessayez plus tard.");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-bg">
       {/* Navigation */}
@@ -79,6 +116,9 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <span className="text-2xl">🍇</span>
             <span className="text-xl font-bold gradient-text">EasyJelly</span>
+            <span className="ml-2 px-2 py-0.5 text-xs bg-purple-600/30 text-purple-300 rounded-full border border-purple-500/30">
+              Accès privé
+            </span>
           </div>
           <div className="hidden md:flex gap-8">
             <a href="#features" className="text-gray-300 hover:text-white transition">
@@ -95,7 +135,7 @@ export default function Home() {
             href="#download"
             className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-medium transition"
           >
-            Télécharger
+            Accéder
           </a>
         </div>
       </nav>
@@ -105,6 +145,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto text-center">
           <div className="animate-float mb-8">
             <span className="text-8xl">🍇</span>
+          </div>
+          <div className="inline-block mb-6 px-4 py-2 glass rounded-full">
+            <span className="text-purple-400">🔒 Service privé sur invitation</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
             <span className="gradient-text glow-text">Votre Media Center</span>
@@ -120,7 +163,7 @@ export default function Home() {
               href="#download"
               className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 px-8 py-4 rounded-xl text-lg font-semibold transition transform hover:scale-105 animate-pulse-glow"
             >
-              Télécharger gratuitement
+              Vérifier mon accès
             </a>
             <a
               href="https://github.com/nicolascleton/jellysetup"
@@ -195,43 +238,80 @@ export default function Home() {
       <section id="download" className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="glass rounded-3xl p-8 md:p-12 text-center glow-purple">
+            <div className="inline-block mb-4 px-3 py-1 bg-purple-600/20 text-purple-300 rounded-full text-sm border border-purple-500/30">
+              🔒 Accès restreint
+            </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="gradient-text">Prêt à commencer ?</span>
+              <span className="gradient-text">Vérifiez votre accès</span>
             </h2>
             <p className="text-xl text-gray-400 mb-10">
-              Téléchargez EasyJelly gratuitement et configurez votre Media Center en moins de 10 minutes.
+              EasyJelly est actuellement en accès privé. Entrez votre email pour vérifier si vous êtes autorisé.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="https://github.com/nicolascleton/jellysetup/releases/latest/download/EasyJelly.dmg"
-                className={`flex items-center justify-center gap-3 px-8 py-4 rounded-xl text-lg font-semibold transition transform hover:scale-105 ${
-                  platform === "mac"
-                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-                    : "glass hover:bg-white/10"
-                }`}
-              >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                </svg>
-                macOS (Apple Silicon & Intel)
-              </a>
-              <a
-                href="https://github.com/nicolascleton/jellysetup/releases/latest/download/EasyJelly.exe"
-                className={`flex items-center justify-center gap-3 px-8 py-4 rounded-xl text-lg font-semibold transition transform hover:scale-105 ${
-                  platform === "windows"
-                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-                    : "glass hover:bg-white/10"
-                }`}
-              >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
-                </svg>
-                Windows (64-bit)
-              </a>
-            </div>
-            <p className="text-sm text-gray-500 mt-6">
-              Version 1.0.0 • Licence MIT • Open Source
-            </p>
+
+            {!isAuthorized ? (
+              <form onSubmit={verifyEmail} className="max-w-md mx-auto">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="votre@email.com"
+                    required
+                    className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isVerifying}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 px-6 py-3 rounded-xl font-semibold transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {isVerifying ? "Vérification..." : "Vérifier"}
+                  </button>
+                </div>
+                {error && (
+                  <p className="mt-4 text-red-400 text-sm">{error}</p>
+                )}
+              </form>
+            ) : (
+              <div>
+                <div className="mb-8 inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Accès autorisé pour {email}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <a
+                    href="https://github.com/nicolascleton/jellysetup/releases/latest/download/EasyJelly.dmg"
+                    className={`flex items-center justify-center gap-3 px-8 py-4 rounded-xl text-lg font-semibold transition transform hover:scale-105 ${
+                      platform === "mac"
+                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                        : "glass hover:bg-white/10"
+                    }`}
+                  >
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    macOS (Apple Silicon & Intel)
+                  </a>
+                  <a
+                    href="https://github.com/nicolascleton/jellysetup/releases/latest/download/EasyJelly.exe"
+                    className={`flex items-center justify-center gap-3 px-8 py-4 rounded-xl text-lg font-semibold transition transform hover:scale-105 ${
+                      platform === "windows"
+                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                        : "glass hover:bg-white/10"
+                    }`}
+                  >
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
+                    </svg>
+                    Windows (64-bit)
+                  </a>
+                </div>
+                <p className="text-sm text-gray-500 mt-6">
+                  Version 1.0.0 • Licence MIT • Open Source
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -271,7 +351,7 @@ export default function Home() {
               </a>
             </div>
             <p className="text-gray-500 text-sm">
-              © 2024 EasyJelly. Projet open-source.
+              © 2024 EasyJelly. Accès sur invitation uniquement.
             </p>
           </div>
         </div>
