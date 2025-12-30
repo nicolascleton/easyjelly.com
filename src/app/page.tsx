@@ -49,13 +49,13 @@ const steps = [
   },
   {
     number: "2",
-    title: "Connectez",
-    description: "Branchez votre carte SD et votre Raspberry Pi",
+    title: "Configurez",
+    description: "Insérez votre carte SD et configurez votre Raspberry Pi",
   },
   {
     number: "3",
-    title: "Lancez",
-    description: "Suivez l'assistant et profitez de votre Media Center",
+    title: "Profitez",
+    description: "L'assistant installe tout automatiquement",
   },
 ];
 
