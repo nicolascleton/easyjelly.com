@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 
-const SUPABASE_URL = "https://erqfznevmgioeumedmac.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVycWZ6bmV2bWdpb2V1bWVkbWFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzMzA4NTMsImV4cCI6MjA2OTkwNjg1M30.C24kGMlAkZYGEbSa-DreWeU6ijcVzc4xnavOIcwjOSw";
+const SUPABASE_URL = "https://ncxowprkehliisvnpmlt.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jeG93cHJrZWhsaWlzdm5wbWx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNTU4NTAsImV4cCI6MjA4MjYzMTg1MH0.UPP83w8US-olhdmOVnrYCju39tIQf3avqFUbl7GHvQg";
 
 const services = [
   {
